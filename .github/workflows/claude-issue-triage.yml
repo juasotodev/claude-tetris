@@ -1,0 +1,56 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Issue Triage
+        id: claude-triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          claude_args: |
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*)"
+
+          prompt: |
+            Analiza el issue #${{ github.event.issue.number }} del repositorio
+            ${{ github.repository }} (un Tetris en JavaScript vanilla, HTML5 Canvas y
+            CSS, sin dependencias; toda la lógica del juego vive en `game.js`).
+
+            Pasos a seguir:
+            1. Lee el issue con `gh issue view ${{ github.event.issue.number }} --json title,body,labels`.
+            2. Revisa el código del repositorio (`index.html`, `style.css`, `game.js`)
+               para entender el contexto del problema o petición descrito en el issue.
+            3. Consulta los labels disponibles con `gh label list` y aplica al issue
+               SOLO los labels que ya existen en el repositorio (no crees labels
+               nuevos) que correspondan mejor, usando:
+               `gh issue edit ${{ github.event.issue.number }} --add-label "<label>"`.
+               Puedes aplicar más de un label si es pertinente. Si el issue ya tiene
+               labels correctos, no los dupliques ni los quites innecesariamente.
+            4. Publica UN ÚNICO comentario en español en el issue con
+               `gh issue comment ${{ github.event.issue.number }} --body "..."` que
+               incluya:
+               - Un resumen breve del problema o petición.
+               - Un diagnóstico general: causa probable o área del código relacionada
+                 (menciona archivos y funciones concretas de `game.js` cuando aplique,
+                 por ejemplo `collide`, `tryRotate`, `lockPiece`, `clearLines`, `loop`,
+                 etc.).
+               - Sugerencia de próximos pasos o de qué información adicional se
+                 necesitaría, si aplica.
+
+            No modifiques código ni abras pull requests. Tu única salida debe ser la
+            aplicación de labels y un comentario de diagnóstico en el issue.
