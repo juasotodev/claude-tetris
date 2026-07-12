@@ -52,5 +52,10 @@ jobs:
                - Sugerencia de próximos pasos o de qué información adicional se
                  necesitaría, si aplica.
 
+               El cuerpo del comentario debe estar escrito en formato Markdown válido
+               para GitHub: usa encabezados (`##`), listas con `-`, y bloques de código
+               con comillas invertidas (por ejemplo, `` `game.js` `` o ``` ```js ``` ```)
+               al referenciar archivos, funciones o fragmentos de código.
+
             No modifiques código ni abras pull requests. Tu única salida debe ser la
             aplicación de labels y un comentario de diagnóstico en el issue.
